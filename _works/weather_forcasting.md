@@ -1,7 +1,7 @@
 ---
 title: "Weather Forcasting (Kaggle, WiDS Datathon)"
 subtitle: "Long range extreme weather forcasting for fighting climate change"
-thumbnail: "../images/WiDS_leaderboard.PNG"
+thumbnail: "./images/WiDS_leaderboard.PNG"
 ---
 
 ![leader board](../images/WiDS_leaderboard.PNG)
