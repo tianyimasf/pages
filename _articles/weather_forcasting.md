@@ -1,16 +1,20 @@
 ---
-id: 0
+id: 1
 title: "Kaggle, WiDS Datathon: Extreme Weather Forcasting Contest"
 subtitle: "Long range extreme weather forcasting for fighting climate change"
-date: "2023.03.17"
+date: "2023.03.15"
 tags: "Data Science, Weather Forcasting"
 ---
 
-_**Background**_
+## Background
 
 The WiDS Datathon 2023 focuses on a prediction task involving forecasting sub-seasonal temperatures (temperatures over a two-week period, in our case) within the United States. They used a pre-prepared dataset consisting of weather and climate information for a number of US locations, for a number of start dates for the two-week observation, as well as the forecasted temperature and precipitation from a number of weather forecast models. Each row in the data corresponds to a single location and a single start date for the two-week period. The task is to predict the arithmetic mean of the maximum and minimum temperature, for each location and start date.
 
-_**Solution**_
+## Motivation
+
+This is my official first full data science project(and this is my first technical blog! Yay!) I was looking for data science activties to join, and I got to know that Stanford is hosting a Women in Data Science conference, along with their datathon which is branded as open to all levels. This is a great execuse to get access to a well-curated, structured dataset, with a good question, and just start to get hands dirty. Besides, climate change is an important issue so I want to give it a try.
+
+## Solution
 
 My solution first preprocess the data. It first solve location discrepencies by scaling the longitude and latitutde, then one-hot encoding categorical data, splitting date feature into 3 numerical variables, filling missing values, removing outliers and power transforming skewed data. Finally, I run Adverserial Validation to check if for each variable the training data distribution matches the test data distribution, then removed a couple features where there is a concept drift.
 
@@ -18,7 +22,7 @@ For training I used an algorithm for gradient boosting on decision trees: [Catbo
 
 Finally, the training RMSE for our model is 0.40107, 0.39942 for the validation set, and 1.222 for the test set. It's on top 50% in the competition.
 
-_**Challenges**_
+## Challenges
 
 My challenges in building this solution is in data preprocessing. Specifically, I was learning the correct way to:
 
@@ -32,13 +36,17 @@ For removing outliers, I used Tukey's method. I compared different implementatio
 
 For checking if distributions of training set are similar to test set, I tried the algorithm suggested in this [medium article](https://medium.com/@praveenkotha/how-to-find-whether-train-data-and-test-data-comes-from-same-data-distribution-9259018343b), except its last(4th) step is incorrect: a classifier needs to be trained using cross validation on the entire dataset, instead of the training data, because the label of the training data will be homogeneously 1. Based on this reason, I adopted [this implementation](https://www.kaggle.com/code/kooaslansefat/wids-2023-woman-life-freedom) of the algorithm and it works perfectly.
 
-_**Future Steps**_
+## Non-technical Challenge
 
-The data is well-preprocessed, however, the model isn't fine-tuned. One future step could be to fine-tune the model and maybe try different optimizer like Adam.
+Before all the technicals happened, there is also a non-technical challenge, which by no means is easier and actually took me some time. Before data preprocessing, I felt the need to understand the meanings of the data given, so I actually spent a lot of my time looking through the documentation on the Kaggle website. In their Data tab the descriptions are only halvely complete. For example, almost half of the variables have name postfixed by a number, but the documentation never explained the meaning of the numbers -- maybe it's days, but then why they have different range? It left me very confused. In the end, I gained some understandings, but not complete. I'd imagine this might get easier as one gradually gains expertise in climate science, or simply have start the project from scratch and thus have access to the data source.
+
+## Future Steps
+
+The data is well-preprocessed, however, the model isn't fine-tuned. One future step could be to fine-tune the model and maybe try different optimizers like Adam.
 
 Secondly, there are more models that could fit this dataset. I can choose some of those, compare the results and use the essemble method to improve RMSE.
 
-_**Source Code**_
+## Source Code
 
 Since a lot happened in the source code, I'm not attaching any code snippet here. If you are interested in checking it out, [here](https://github.com/tianyimasf/kaggle/blob/main/wids-datathon-tianyi-yukyung-and-irsa.ipynb) is the full code for this project.
 
