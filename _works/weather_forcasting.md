@@ -6,7 +6,7 @@ thumbnail: "/images/WiDS_leaderboard.PNG"
 
 ![leader board](/images/WiDS_leaderboard.PNG)
 
-![dummy image](/images/corr_heatmap_WiDS.png)
+![heatmap](/images/corr_heatmap_WiDS.png)
 
 _**Weather Forcasting (Kaggle, WiDS Datathon) | Mar, 2023 | [Kaggle Notebook](https://www.kaggle.com/code/tianyimasf/wids-datathon-tianyi-yukyung-and-irsa) | [Github](https://github.com/tianyimasf/kaggle/blob/main/wids-datathon-tianyi-yukyung-and-irsa.ipynb)**_
 
