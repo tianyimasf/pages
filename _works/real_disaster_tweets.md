@@ -21,3 +21,5 @@ But, it’s not always clear whether a person’s words are actually announcing 
 The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.
 
 In this competition, we’re challenged to build a machine learning model that predicts which Tweets are about real disasters and which one’s aren’t.
+
+If you are interested in further documentation, I have a blog detailed [my solution](/article/1.html) to this problem.
