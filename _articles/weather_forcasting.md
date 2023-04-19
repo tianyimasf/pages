@@ -1,5 +1,5 @@
 ---
-id: 1
+id: 0
 title: "Kaggle, WiDS Datathon: Extreme Weather Forcasting Contest"
 subtitle: "Long range extreme weather forcasting for fighting climate change"
 date: "2023.03.15"

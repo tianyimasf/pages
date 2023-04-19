@@ -1,5 +1,5 @@
 ---
-id: 0
+id: 1
 title: "Kaggle Contest: Real Disaster Tweets Prediction"
 subtitle: "Predict if a tweet is really reporting a disaster or not"
 date: "2023.03.19"
