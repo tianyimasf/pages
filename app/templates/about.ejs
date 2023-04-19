@@ -1,35 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>About</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>About</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-  <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon">
-  <link rel="preload" href="./styles/about.css" as="style">
-  <link rel="stylesheet" href="./styles/about.css">
-</head>
-<body>
-  <header id="top-container" role="navigation">
-    <%- include(process.cwd() + '/app/templates/navigation'); %>
-  </header>
-  <main id="main-container">
-    <section id="about-container">
-      <img src="./assets/profile_small.jpg" alt="Tianyi" />
-      <section class="intro">
-        You're welcome to contact me for job/research/collaboration opportunities or just chat about ML/AL.
+    <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon" />
+    <link rel="preload" href="./styles/about.css" as="style" />
+    <link rel="stylesheet" href="./styles/about.css" />
+  </head>
+  <body>
+    <header id="top-container" role="navigation">
+      <%- include(process.cwd() + '/app/templates/navigation'); %>
+    </header>
+    <main id="main-container">
+      <section id="about-container">
+        <img src="./assets/profile_small.jpg" alt="Tianyi" />
+        <section class="intro">
+          You're welcome to contact me for job/research/collaboration
+          opportunities or just chat about ML/AL.
+        </section>
+        <section>
+          <ul>
+            <li>
+              <a href="mailto:tianyi437@gmail.com">tianyi437@gmail.com</a>
+              <a href="https://github.com/tianyimasf">github</a>
+              <a href="https://www.linkedin.com/in/tianyi-ma-9b2012170/"
+                >linkedin</a
+              >
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>Fun Stuff</h2>
+          <img src="./assets/data_joke.jpg" alt="data joke" />
+        </section>
       </section>
-      <section>
-        <ul>
-          <li>
-            <a href="mailto:tianyi437@gmail.com">tianyi437@gmail.com</a>
-            <a href="https://github.com/tianyimasf">github</a>
-            <a href="https://www.linkedin.com/in/tianyi-ma-9b2012170/">linkedin</a>
-          </li>
-        </ul>
-      </section>
-  </main>
-</body>
+    </main>
+  </body>
 </html>
