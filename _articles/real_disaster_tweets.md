@@ -66,6 +66,8 @@ Without any further customized fine-tuning and data preprocessing, the model ach
 
 I want to work on it a bit more in the future to explore text data preparation and handmaking a Transformer model. Following a different section of the above mentioned article and other notebooks should serve as a good first step. Besides, I also want to try fine-tuning the model, see how different hyperparameters affect the model accuracy, and how other training strategies like using Stratified Fold affect the model outcome. In the next article, I will discuss this work, and how I improved the model accuracy from 0.75758 to a consistent and reproducable ~0.786. 
 
+![leaderboard](../images/real_disaster_leaderboard.PNG)
+
 The pre-contest research, learning about Tensorflow and making sense of the data type took the most time. I feel like I learned a lot from this project, and hope you enjoyed my blog too! Feel free to comment if you have any thoughts.
 
 ## Source Code
