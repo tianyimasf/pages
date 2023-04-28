@@ -22,4 +22,6 @@ The author explicitly uses the word “ABLAZE” but means it metaphorically. Th
 
 In this competition, we’re challenged to build a machine learning model that predicts which Tweets are about real disasters and which one’s aren’t.
 
-If you are interested in further documentation, I have a blog detailed [my solution](/pages/article/1.html) to this problem.
+Using the Transformer encoder model, I initially acheived a 0.75758 accuracy. Upon fine-tuning, the accuracy is improved to 0.78577.
+
+If you are interested in discussions about how I did this, I have a blog detailed [my solution](/pages/article/1.html) to this problem.
