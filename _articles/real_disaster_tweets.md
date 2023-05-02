@@ -36,7 +36,7 @@ The mechanism takes its input in the form of three parameters, known as Query(Q)
 
 ![transformer attention score](../images/transformer_attention_score.webp)
 
-The encoder takes the input sentence embedding as all three, Q, K, and V. The intuition is that this allows each words in the sentence pay attention to each other words in the same sentence, and thus learn their meaning relative to each other within the sentence. Essentially, it calculate an attention score for the input, which gets incorporated in the decoder to calculate a loss function. This self attention block is stacked 6 times.
+The encoder takes the input sentence embedding as all three, Q, K, and V. The intuition is that this allows each words in the sentence pay attention to each other words in the same sentence, and thus learn their meaning relative to each other within the sentence(the context). In the end, it calculate an attention score for the input, which gets incorporated in the decoder to calculate a loss function. This self attention block is stacked 6 times.
 
 ![transformer self attention architecture](../images/transformer_self_attention_architecture.webp)
 
@@ -64,7 +64,7 @@ Without any further customized fine-tuning and data preprocessing, the model ach
 
 ## Future Steps
 
-I want to work on it a bit more in the future to explore text data preparation and handmaking a Transformer model. Following a different section of the above mentioned article and other notebooks should serve as a good first step. Besides, I also want to try fine-tuning the model, see how different hyperparameters affect the model accuracy, and how other training strategies like using Stratified Fold affect the model outcome. In the next article, I will discuss this work, and how I improved the model accuracy from 0.75758 to a consistent and reproducable ~0.786. 
+I want to work on it a bit more in the future to explore text data preparation and handmaking a Transformer model. Following a different section of the above mentioned article and other notebooks should serve as a good first step. Besides, I also want to try fine-tuning the model, see how different hyperparameters affect the model accuracy, and how other training strategies like using 5-fold Stratified Cross Validation to affect the model outcome. In [the next article](/pages/article/3.html), I discuss this work, and how I improved the model accuracy from 0.75758 to a consistent and reproducable ~0.786. 
 
 ![leaderboard](../images/real_disaster_leaderboard.PNG)
 

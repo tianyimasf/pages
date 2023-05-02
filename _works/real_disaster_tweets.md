@@ -24,4 +24,4 @@ In this competition, we’re challenged to build a machine learning model that p
 
 Using the Transformer encoder model, I initially acheived a 0.75758 accuracy. Upon fine-tuning, the accuracy is improved to 0.78577.
 
-If you are interested in discussions about how I did this, I have a blog detailed [my solution](/pages/article/1.html) to this problem.
+If you are interested in discussions about how I did this, I have a blog detailed [my solution, part 1](/pages/article/1.html), [part 2](/pages/article/3.html) to this problem.
