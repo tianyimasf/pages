@@ -33,13 +33,18 @@ vocab_size = 17000  # Only consider the top 17k words
 maxlen = 16  # Only consider the first 16 words of each tweet
 
 train_data = train_data.fillna('')
-train_data['text']=train_data['text'].apply(clean_text)
-train_data['text'] = train_data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
-train_data['text']=train_data['text'].apply(preprocessdata)
+train_data['text']=train_data['text'].apply(clean_text)  # Strips html, numbers, punctuations, etc.
+train_data['text'] = train_data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))  # Stripes stop words
+train_data['text']=train_data['text'].apply(preprocessdata)  # Lemmatization
 
+
+# The location and keyword for each tweets are available in some rows
+# Concatenate to take those into account
 spaces = [' ' for i in range(0, len(train_data.location))]
 X = train_data.text + spaces + train_data.location + spaces + train_data.keyword
 
+
+# word2id
 frequent_words = pd.Series(' '.join(X).split()).value_counts()[:vocab_size]
 vocabulary = frequent_words.keys().tolist()
 def map2vocab_index(text):
@@ -71,7 +76,7 @@ pd.Series(length).quantile(0.9)
 # > 16.0    # 90% quantile of the input length
 ```
 
-And this is the reason why the above `max_length` is chose -- because 90% of the texts have less than 16 words after preprocessing, and we don't want all the extra zeros when we are doing the padding, which is done by the below code. with `train_test_split()`:
+And this is the reason why the above `maxlen` is chosen -- because 90% of the texts have less than 16 words after preprocessing, and we don't want all the extra zeros when we are doing the padding, which is done by the below code. with `train_test_split()`:
 
 ```python
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.33, random_state=42)
@@ -165,7 +170,7 @@ It's easy to see that for this model, we have several model parameters to tweak 
 | Dropout Rate | 0.1, 0.2, 0.3, 0.4, 0.5 |
 | Learning Rate | 1e-5, 5e-5, 1e-4 |
 
-By experimenting with different combinations and reading other people's takes and results, I finally chose the above parameters since it seems to work the best with this problem specifically. I spent the majority of my time tuning the model architecture using these possible parameter values, repeating a few times with each set of value combinations to try verify the results. It's really fun and after a few times you can see that there is definitely patterns to it. 
+By experimenting with different combinations and reading other people's takes and results, I finally chose the values in the code block shown above since it seems to work the best with this problem specifically. I spent the majority of my time tuning the model architecture using these possible parameter values, repeating a few times with each set of value combinations to try verify the results. It's really fun and after a few times you can see that there is definitely patterns to it. For example, this is hardly a big or medium dataset, and if the model is too complex it can't even acheive our previous accuracy 75%. Setting Hidden Layer Dimension to be 512 and # of attention heads to 2 usually do the trick and gave us resulting accuracy comparable to our pre-trained model, that is, 75%. Embedding Dimension that is larger than 100 usually make the model worse. More than 2 transformer block also make it worse. Considering that input sequences have at max 16 words, and the dataset is quite small, it's preferable to have small models to avoid overfitting. At last, a learning rate of 1e-4 is shown to have better performance than 1e-5 or 5e-5 and is therefore chosen.
 
 Below is my code to train the model. The actual code is long and hard to read, so I just showed the most important code here. Full source code is attached in the end. Following the best practices, I used 5-fold Stratified Cross Validation to build 5 different models, and later predict using their average output. It saves the model on each epoch if it's the best model seen so far based on validation accuracy. It will also stop early if the model stopped improving.
 
@@ -187,7 +192,9 @@ for train_indices, val_indices in StratifiedKFold(5, shuffle=True, random_state=
 
 ## Result and Discussion
 
-The final model improved ~75% accuracy to ~78.5% accuracy and boosted my rank up +200. The only thing is that the Transformer in its original form is most suitable for output sequence generation such as Machine Translation, but this is a classification problem. For this kind of problem, it's better to use a pre-trained variation of the BERT model, of which the objective is to give a good representation of the sequence for downstream application, in our case a classification problem. BERT is pre-trained as a Masked Language Model(50% of the time) and using Next Sentence Prediction(the other 50%). BERT pre-trained models are great for transfering learning use cases like this. In fact, every Kaggle notebook that used the original Transformer model has an accuracy equal or less than 80%, however, every solution on the first page that used BERT has easily at least 82.5% accuracy. It's not a difficult task to port a BERT model into my solution -- I just need to use a tokenizer and then build some Feed Forward Network upon the BERT representation. However, my solution is already pretty long and dense, so I skipped it for now -- I'll use BERT in my next project. I already have an idea of what I want to do. On the other hand, I also want to incorporate some tools to automate experimentation and versioning my models and predictions: manual experimentation is chaotic and without documentation, which is a big problem I had. 
+The final model improved ~75% accuracy to ~78.5% accuracy and boosted my rank up +200. The only thing is that the Transformer in its original form is most suitable for output sequence generation such as Machine Translation, but this is a classification problem. For this kind of problem, it's better to use a pre-trained variation of the BERT model, of which the objective is to give a good representation of the sequence for downstream application, in our case a classification problem. BERT is pre-trained as a Masked Language Model(50% of the time) and using Next Sentence Prediction(the other 50%). BERT pre-trained models are great for transfering learning use cases like this. In fact, every Kaggle notebook that used the original Transformer model has an accuracy equal or less than 80%, however, every solution on the first page that used BERT has easily at least 82.5% accuracy. It's not a difficult task to port a BERT model into my solution -- I just need to use a tokenizer and then build some Feed Forward Network upon the BERT representation. However, my solution is already pretty long and dense, so I skipped it for now -- I'll use BERT in my next project. I already have an idea of what I want to do. On the other hand, I also want to incorporate some tools to automate experimentation and to version my models and predictions: manual experimentation is chaotic and without documentation, which was a big problem I had in this project. 
+
+I learned a lot about fine-tuning through this experience, and have read tutorials, documentations, and implementation codes. It's been a great learning experience, and now I feel much more comfortable developing ML models using Tensorflow and Keras and has a crude sense of model complexity and performance that needs to be improved upon still. Hope you find something interesting or useful in this article as well.
 
 ## Source Code
 
