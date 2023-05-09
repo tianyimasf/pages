@@ -1,5 +1,5 @@
 ---
-title: "Art History Data Analysis -- a Tidy Tuesday Series"
+title: "Art History Data Storytelling -- a Tidy Tuesday Series"
 subtitle: "Data Wrangling and Visualization using Art History Data by Tidy Tuesday"
 thumbnail: "./images/top_20_popular_artists.png"
 ---
