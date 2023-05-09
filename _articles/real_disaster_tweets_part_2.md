@@ -1,7 +1,7 @@
 ---
 id: 3
-title: "Kaggle Contest: Real Disaster Tweets Prediction, Part 2"
-subtitle: "Predict if a tweet is really reporting a disaster or not, Part 2"
+title: "Real Disaster Tweets Prediction, Part 2"
+subtitle: "Predict if a tweet is really reporting a disaster or not by fine-tuning Transformer model"
 date: "2023.04.27"
 tags: "ML, NLP, Transformer, Fine Tuning, Experiments"
 ---
@@ -120,7 +120,7 @@ class TransformerBlock(Layer):
         self.dropout1 = Dropout(rate)
         self.layernorm1 = LayerNormalization(epsilon=1e-6)
         self.ffn = Sequential(
-            [Dense(ff_dim, activation="relu"), 
+            [Dense(ff_dim, activation="relu"),
              Dense(embed_dim),]
         )
         self.dropout2 = Dropout(rate)
@@ -161,14 +161,14 @@ def get_model():
 
 It's easy to see that for this model, we have several model parameters to tweak around with. The table below are the values I tried corresponding to each of those paramaters.
 
-| Parameter | Values |
-| -------- | ------- |
-| # of transformer blocks  | 1, 2, 3, 6 |
-| Embedding Dimension | 32, 64, 100, 128, 256, 512 |
-| # of attention heads | 2, 4, 8 |
-| Hiden Layer Dimension | 64, 128, 256, 512, 1024, 2048 |
-| Dropout Rate | 0.1, 0.2, 0.3, 0.4, 0.5 |
-| Learning Rate | 1e-5, 5e-5, 1e-4 |
+| Parameter               | Values                        |
+| ----------------------- | ----------------------------- |
+| # of transformer blocks | 1, 2, 3, 6                    |
+| Embedding Dimension     | 32, 64, 100, 128, 256, 512    |
+| # of attention heads    | 2, 4, 8                       |
+| Hiden Layer Dimension   | 64, 128, 256, 512, 1024, 2048 |
+| Dropout Rate            | 0.1, 0.2, 0.3, 0.4, 0.5       |
+| Learning Rate           | 1e-5, 5e-5, 1e-4              |
 
 By experimenting with different combinations and reading other people's takes and results, I finally chose the values in the code block shown above since it seems to work the best with this problem specifically. I spent the majority of my time tuning the model architecture using these possible parameter values, repeating a few times with each set of value combinations to try verify the results. It's really fun and after a few times you can see that there is definitely patterns to it. For example, this is hardly a big or medium dataset, and if the model is too complex it can't even acheive our previous accuracy 75%. Setting Hidden Layer Dimension to be 512 and # of attention heads to 2 usually do the trick and gave us resulting accuracy comparable to our pre-trained model, that is, 75%. Embedding Dimension that is larger than 100 usually make the model worse. More than 2 transformer block also make it worse. Considering that input sequences have at max 16 words, and the dataset is quite small, it's preferable to have small models to avoid overfitting. At last, a learning rate of 1e-4 is shown to have better performance than 1e-5 or 5e-5 and is therefore chosen.
 
@@ -176,23 +176,23 @@ Below is my code to train the model. The actual code is long and hard to read, s
 
 ```python
 for train_indices, val_indices in StratifiedKFold(5, shuffle=True, random_state=42).split(X_train, y_train):
-    
+
     # ...
-    
+
     model = get_model()
-    model.compile(optimizer=tf.keras.optimizers.Adam(1e-4), 
+    model.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
                     loss=tf.keras.losses.BinaryCrossentropy(), metrics=["accuracy"])
-    
+
     early_stop = tf.keras.callbacks.EarlyStopping(patience=5)
 
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(model_checkpoint_path, monitor="val_accuracy", save_best_only=True, save_weights_only=True)
-    
+
     history = model.fit(train_features, train_targets, validation_data=(validation_features, validation_targets), epochs=20, callbacks=[early_stop, model_checkpoint])
 ```
 
 ## Result and Discussion
 
-The final model improved ~75% accuracy to ~78.5% accuracy and boosted my rank up +200. The only thing is that the Transformer in its original form is most suitable for output sequence generation such as Machine Translation, but this is a classification problem. For this kind of problem, it's better to use a pre-trained variation of the BERT model, of which the objective is to give a good representation of the sequence for downstream application, in our case a classification problem. BERT is pre-trained as a Masked Language Model(50% of the time) and using Next Sentence Prediction(the other 50%). BERT pre-trained models are great for transfering learning use cases like this. In fact, every Kaggle notebook that used the original Transformer model has an accuracy equal or less than 80%, however, every solution on the first page that used BERT has easily at least 82.5% accuracy. It's not a difficult task to port a BERT model into my solution -- I just need to use a tokenizer and then build some Feed Forward Network upon the BERT representation. However, my solution is already pretty long and dense, so I skipped it for now -- I'll use BERT in my next project. I already have an idea of what I want to do. On the other hand, I also want to incorporate some tools to automate experimentation and to version my models and predictions: manual experimentation is chaotic and without documentation, which was a big problem I had in this project. 
+The final model improved ~75% accuracy to ~78.5% accuracy and boosted my rank up +200. The only thing is that the Transformer in its original form is most suitable for output sequence generation such as Machine Translation, but this is a classification problem. For this kind of problem, it's better to use a pre-trained variation of the BERT model, of which the objective is to give a good representation of the sequence for downstream application, in our case a classification problem. BERT is pre-trained as a Masked Language Model(50% of the time) and using Next Sentence Prediction(the other 50%). BERT pre-trained models are great for transfering learning use cases like this. In fact, every Kaggle notebook that used the original Transformer model has an accuracy equal or less than 80%, however, every solution on the first page that used BERT has easily at least 82.5% accuracy. It's not a difficult task to port a BERT model into my solution -- I just need to use a tokenizer and then build some Feed Forward Network upon the BERT representation. However, my solution is already pretty long and dense, so I skipped it for now -- I'll use BERT in my next project. I already have an idea of what I want to do. On the other hand, I also want to incorporate some tools to automate experimentation and to version my models and predictions: manual experimentation is chaotic and without documentation, which was a big problem I had in this project.
 
 I learned a lot about fine-tuning through this experience, and have read tutorials, documentations, and implementation codes. It's been a great learning experience, and now I feel much more comfortable developing ML models using Tensorflow and Keras and has a crude sense of model complexity and performance that needs to be improved upon still. Hope you find something interesting or useful in this article as well.
 
@@ -205,4 +205,3 @@ I learned a lot about fine-tuning through this experience, and have read tutoria
 1. Transformers For Text Classification: https://blog.paperspace.com/transformers-text-classification
 2. Kaggle, Transformer Encoder for Classification in Pytorch: https://www.kaggle.com/code/zhuyuqiang/transformer-encoder-for-classification-in-pytorch
 3. Kaggle, Disaster Tweets Classification: Transformer: https://www.kaggle.com/code/lonnieqin/disaster-tweets-classification-transformer
-
