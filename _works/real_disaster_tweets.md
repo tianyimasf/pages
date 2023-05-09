@@ -8,7 +8,7 @@ thumbnail: "./images/real_disaster_model.PNG"
 
 ![leaderboard](../images/real_disaster_leaderboard.PNG)
 
-_**Real Disaster Tweets Prediction, Kaggle | Mar, 2023 | [Kaggle Notebook](https://www.kaggle.com/code/tianyimasf/real-disaster-tweets-prediction-with-transformer) | [Github](https://github.com/tianyimasf/kaggle/blob/main/real-disaster-tweets-prediction-with-transformer.ipynb)**_
+_**Real Disaster Tweets Prediction| Mar, 2023 | [Kaggle Notebook](https://www.kaggle.com/code/tianyimasf/real-disaster-tweets-prediction-with-transformer) | [Github](https://github.com/tianyimasf/kaggle/blob/main/real-disaster-tweets-prediction-with-transformer.ipynb)**_
 
 Twitter has become an important communication channel in times of emergency.
 
