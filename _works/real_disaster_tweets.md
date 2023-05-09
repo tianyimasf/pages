@@ -1,5 +1,5 @@
 ---
-title: "Real Disaster Tweets Prediction, Kaggle"
+title: "Real Disaster Tweets Prediction"
 subtitle: "Predict if a tweet is really reporting a disaster or not"
 thumbnail: "./images/real_disaster_model.PNG"
 ---
