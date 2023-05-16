@@ -14,7 +14,7 @@ The above is FB social network visualizations for 3000 anonymous users, created 
 
 ![World_Temperature_Mean_at_Wet_Seasons_using_Tableau](../images/World_Temperature_Mean_at_Wet_Seasons_using_Tableau.png)
 
-This is a time series visualizationo of world temperature mean at wet seasons(DJF, MAM) from 1875 to 2020, created using Tableau.
+This is a time series visualization of world temperature mean at wet seasons(DJF, MAM) from 1880 to 2015, created using Tableau.
 
 ![navarro_streams_map_layout](../images/navarro_streams_map_layout.png)
 
