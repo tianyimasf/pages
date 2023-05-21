@@ -16,6 +16,10 @@ The above is FB social network visualizations for 3000 anonymous users, created 
 
 This is a time series visualization of world temperature mean at wet seasons(DJF, MAM) from 1880 to 2015, created using Tableau.
 
-![navarro_streams_map_layout](../images/navarro_streams_map_layout.png)
+![navarro_streams_map_layout](navarro_streams_map_layout.png)
 
 Through the GIS course from US Davis on Coursera, I made my first map using ArcGIS.
+
+![gmo_electoral_politics_analysis](../images/gmo_electoral_politics_analysis.png)
+
+A map plotting the percentages of yes votes for each California county for the ballot measure that requires Genetically Modified Organism labeling.
