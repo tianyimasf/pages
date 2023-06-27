@@ -1,0 +1,99 @@
+<!doctypehtml>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>WiDS Datathon: Extreme Weather Forcasting Contest</title>
+
+    <meta name="viewport"content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible"content="ie=edge">
+
+    <link rel="shortcut icon"href="../assets/favicon.ico"type="image/x-icon">
+    <link rel="preload"href="../styles/article.css"as="style">
+    <link rel="stylesheet"href="../styles/article.css">
+  </head>
+  <body>
+    <header id="top-container"role="navigation">
+      <nav>
+  <a class="logo-link"href="/pages">
+    <h1>Tianyi Ma</h1>
+    <span>'s stuff</span>
+  </a>
+  <small>
+    <a id="about"class="info-link"href="/pages/about.html">👀About</a> /
+    <a id="works"class="info-link"href="/pages/works.html">🔥Works</a> /
+    <a id="articles"class="info-link"href="/pages/articles.html">📚Articles</a>
+  </small>
+</nav>
+
+    </header>
+    <main id="main-container">
+      <article id="article-container">
+        <h1 id="article-title">WiDS Datathon: Extreme Weather Forcasting Contest</h1>
+        
+        <h2 id="article-subtitle">Long range extreme weather forcasting for fighting climate change</h2>
+        
+        <time id="article-date"> 2023.03.15 </time>
+        <section id="article-content-container"><details><summary>Table of Contents</summary>
+<p><div class="table-of-contents"><ul><li><a href="#background">Background</a><li><a href="#motivation">Motivation</a><li><a href="#solution">Solution</a><li><a href="#challenges">Challenges</a><li><a href="#non-technical-challenge">Non-technical Challenge</a><li><a href="#future-steps">Future Steps</a><li><a href="#source-code">Source Code</a></ul></div><p></p>
+</details>
+<h2 id="background"tabindex="-1">Background</h2>
+<p>The WiDS Datathon 2023 focuses on a prediction task involving forecasting sub-seasonal temperatures (temperatures over a two-week period, in our case) within the United States. They used a pre-prepared dataset consisting of weather and climate information for a number of US locations, for a number of start dates for the two-week observation, as well as the forecasted temperature and precipitation from a number of weather forecast models. Each row in the data corresponds to a single location and a single start date for the two-week period. The task is to predict the arithmetic mean of the maximum and minimum temperature, for each location and start date.</p>
+<h2 id="motivation"tabindex="-1">Motivation</h2>
+<p>This is my official first full data science project(and this is my first technical blog! Yay!) I was looking for data science activties to join, and I got to know that Stanford is hosting a Women in Data Science conference, along with their datathon which is branded as open to all levels. This is a great execuse to get access to a well-curated, structured dataset, with a good question, and just start to get hands dirty. Besides, climate change is an important issue so I want to give it a try.</p>
+<h2 id="solution"tabindex="-1">Solution</h2>
+<p>My solution first preprocess the data. It first solve location discrepencies by scaling the longitude and latitutde, then one-hot encoding categorical data, splitting date feature into 3 numerical variables, filling missing values, removing outliers and power transforming skewed data. Finally, I run Adverserial Validation to check if for each variable the training data distribution matches the test data distribution, then removed a couple features where there is a concept drift.</p>
+<p>For training I used an algorithm for gradient boosting on decision trees: <a href="https://arxiv.org/abs/1706.09516">Catboost</a>, optimized by Bayesian Optimization, which in one sentence picks the next parameter value based on the performance of previous parameter value. In the end I also visualized feature importance to gain further insights into the trained model.</p>
+<p>Finally, the training RMSE for our model is 0.40107, 0.39942 for the validation set, and 1.222 for the test set. It’s on top 50% in the competition.</p>
+<h2 id="challenges"tabindex="-1">Challenges</h2>
+<p>My challenges in building this solution is in data preprocessing. Specifically, I was learning the correct way to:</p>
+<ul>
+<li>Tranform skewed data</li>
+<li>Remove outliers</li>
+<li>Check if distributions of training set are similar to test set</li>
+</ul>
+<p>The first challenge to transform skewed data is to determine whether it’s feasible in this contest. If the training data is transformed to be used for training, then the test set also needs to be transformed before making predictions. After verifying that this is indeed the case, I made sure that the test set is given to us to be used. Then, I found the variables that’s skewed, and investigated different transform methods, including Min Max Scaler, log and power transform, and used KDE plot to verify the findings and results. Because some of the data is negative, log transform can’t be used, and power transform looked better.</p>
+<p>For removing outliers, I used Tukey’s method. I compared different implementations, and picked one that looked the most clean and intuitive to me.</p>
+<p>For checking if distributions of training set are similar to test set, I tried the algorithm suggested in this <a href="https://medium.com/@praveenkotha/how-to-find-whether-train-data-and-test-data-comes-from-same-data-distribution-9259018343b">medium article</a>, except its last(4th) step is incorrect: a classifier needs to be trained using cross validation on the entire dataset, instead of the training data, because the label of the training data will be homogeneously 1. Based on this reason, I adopted <a href="https://www.kaggle.com/code/kooaslansefat/wids-2023-woman-life-freedom">this implementation</a> of the algorithm and it works perfectly.</p>
+<h2 id="non-technical-challenge"tabindex="-1">Non-technical Challenge</h2>
+<p>Before all the technicals happened, there is also a non-technical challenge, which by no means is easier and actually took me some time. Before data preprocessing, I felt the need to understand the meanings of the data given, so I actually spent a lot of my time looking through the documentation on the Kaggle website. In their Data tab the descriptions are only halvely complete. For example, almost half of the variables have name postfixed by a number, but the documentation never explained the meaning of the numbers – maybe it’s days, but then why they have different range? It left me very confused. In the end, I gained some understandings, but not complete. I’d imagine this might get easier as one gradually gains expertise in climate science, or simply have start the project from scratch and thus have access to the data source.</p>
+<h2 id="future-steps"tabindex="-1">Future Steps</h2>
+<p>The data is well-preprocessed, however, the model isn’t fine-tuned. One future step could be to fine-tune the model and maybe try different optimizers like Adam.</p>
+<p>Secondly, there are more models that could fit this dataset. I can choose some of those, compare the results and use the essemble method to improve RMSE.</p>
+<h2 id="source-code"tabindex="-1">Source Code</h2>
+<p>Since a lot happened in the source code, I’m not attaching any code snippet here. If you are interested in checking it out, <a href="https://github.com/tianyimasf/kaggle/blob/main/wids-datathon-tianyi-yukyung-and-irsa.ipynb">here</a> is the full code for this project.</p>
+<p>That’s all! Hope you enjoyed, and feel free to comment below if you have any thoughts!</p>
+</section>
+        <section id="article-navigation">
+           
+          <div class="article-navigation-item article-navigation-prev">
+            <a href="/pages/article/3.html">
+              <div class="article-navigation-arrow article-navigation-prev">
+                ＞
+              </div>
+              <div class="article-navigation-content article-navigation-prev">
+                <p class="article-navigation-title">Real Disaster Tweets Prediction, Part 2</p>
+                <p class="article-navigation-subtitle">
+                  Predict if a tweet is really reporting a disaster or not by fine-tuning Transformer model
+                </p>
+              </div>
+            </a>
+          </div>
+          
+        </section>
+        <section id="article-social-container">
+          <div id="fb-root"></div>
+          <div id="fb-like"class="fb-like"data-href="https://tianyimasf.github.io/article/0.html"data-layout="button_count"data-action="like"data-size="small"data-show-faces="true"data-share="true"></div>
+          <a href="https://twitter.com/share"class="twitter-share-button"data-show-count="true"></a>
+        </section>
+        <section id="article-comments">
+          <script async src="https://utteranc.es/client.js"repo="tianyimasf/pages-comments"issue-term="pathname"theme="github-light"crossorigin="anonymous"></script>
+        </section>
+        <section id="article-list-button-container">
+          <a href="/articles.html">
+            <div id="article-list-button">📚</div>
+          </a>
+        </section>
+      </article>
+    </main>
+  
+

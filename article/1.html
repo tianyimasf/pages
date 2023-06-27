@@ -1,0 +1,121 @@
+<!doctypehtml>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Kaggle Contest: Real Disaster Tweets Prediction</title>
+
+    <meta name="viewport"content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible"content="ie=edge">
+
+    <link rel="shortcut icon"href="../assets/favicon.ico"type="image/x-icon">
+    <link rel="preload"href="../styles/article.css"as="style">
+    <link rel="stylesheet"href="../styles/article.css">
+  </head>
+  <body>
+    <header id="top-container"role="navigation">
+      <nav>
+  <a class="logo-link"href="/pages">
+    <h1>Tianyi Ma</h1>
+    <span>'s stuff</span>
+  </a>
+  <small>
+    <a id="about"class="info-link"href="/pages/about.html">👀About</a> /
+    <a id="works"class="info-link"href="/pages/works.html">🔥Works</a> /
+    <a id="articles"class="info-link"href="/pages/articles.html">📚Articles</a>
+  </small>
+</nav>
+
+    </header>
+    <main id="main-container">
+      <article id="article-container">
+        <h1 id="article-title">Kaggle Contest: Real Disaster Tweets Prediction</h1>
+        
+        <h2 id="article-subtitle">Predict if a tweet is really reporting a disaster or not</h2>
+        
+        <time id="article-date"> 2023.03.19 </time>
+        <section id="article-content-container"><details><summary>Table of Contents</summary>
+<p><div class="table-of-contents"><ul><li><a href="#background">Background</a><li><a href="#motivation">Motivation</a><li><a href="#how-transformer-works">How Transformer Works</a><li><a href="#the-program">The Program</a><li><a href="#result">Result</a><li><a href="#future-steps">Future Steps</a><li><a href="#source-code">Source Code</a></ul></div><p></p>
+</details>
+<h2 id="background"tabindex="-1">Background</h2>
+<p>Twitter has become an important communication channel in times of emergency.</p>
+<p>The ubiquitousness of smartphones enables people to announce an emergency they’re observing in real-time. Because of this, more agencies are interested in programatically monitoring Twitter (i.e. disaster relief organizations and news agencies).</p>
+<p>But, it’s not always clear whether a person’s words are actually announcing a disaster. Take this example:</p>
+<p><img src="../images/fake_disaster_tweet.png"alt="fake disaster tweet"loading="lazy"decoding="async"width="592"height="1226"></p>
+<p>The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.</p>
+<p>In this competition, we’re challenged to build a machine learning model that predicts which Tweets are about real disasters and which one’s aren’t.</p>
+<h2 id="motivation"tabindex="-1">Motivation</h2>
+<p>I have always know various ML NLP algorithms, but haven’t used them in a real dataset outside of a classroom setting. When I saw this competitioni in Kaggle, I thought it would be a great opportunity for me to read the original paper and online resources about and deepen my understanding of the model behind recent LLM(Large Language Model), the Tranformer model, and learn to implement and customize it for this specific task.</p>
+<h2 id="how-transformer-works"tabindex="-1">How Transformer Works</h2>
+<p>For this competition, I started by researching and understanding the details of the Transformer architecture. The most important component of this architecture is the multihead attention mechanism.</p>
+<p>The mechanism takes its input in the form of three parameters, known as Query(Q), Key(K) and Value(V). They come in the format of matrices, and the main idea is drawn from informtation retrieval. For example, if you are searching for YouTube videos, and put in a few key words(Q), the search engine look for similar tag words(K), and return videos(V) associated with those tags. This QKV system is the backbone of the Transformer architecture. One block component using the attention mechanism will essentially multiply Q with a weight matrix Wq, similarly K with Wk, V with Wk, and them together, withsome normalization and non-linearity.</p>
+<p><img src="../images/transformer_wq.webp"alt="transformer wq"loading="lazy"decoding="async"width="480"height="300"></p>
+<p><img src="../images/transformer_linear_layer.webp"alt="transformer linear layer"loading="lazy"decoding="async"width="1200"height="536"></p>
+<p><img src="../images/transformer_attention_score.webp"alt="transformer attention score"loading="lazy"decoding="async"width="480"height="360"></p>
+<p>The encoder takes the input sentence embedding as all three, Q, K, and V. The intuition is that this allows each words in the sentence pay attention to each other words in the same sentence, and thus learn their meaning relative to each other within the sentence(the context). In the end, it calculate an attention score for the input, which gets incorporated in the decoder to calculate a loss function. This self attention block is stacked 6 times.</p>
+<p><img src="../images/transformer_self_attention_architecture.webp"alt="transformer self attention architecture"loading="lazy"decoding="async"width="720"height="535"></p>
+<p>For the decoder, one same block of self-attention is used with the output embedding as Q, K and V. Then, it goes through an Add &amp; Norm layer. This layer add the attention scores calculated by the previous layer, which in this case is the word embedding, and normalize the layer. Add &amp; Norm layers follow every attention block and linear block in this architecture. After the Add &amp; Norm layer is an encoder-decoder, where Q is the output self-attention score from the Add &amp; Norm layer, and K and V are input sequence from the encoder. The intuition is that this layer calculates the attention score when the target sentence is paying attention to the input sentence. It captures how each words in the input sentence interact with words in the target sentence.</p>
+<p><img src="../images/transformer_encoder_decoder.webp"alt="transformer encoder-decoder"loading="lazy"decoding="async"width="480"height="420"></p>
+<p>Here is the full architecture:</p>
+<p><img src="../images/transformer.webp"alt="transformer"loading="lazy"decoding="async"width="828"height="1007"></p>
+<p>To use Transformer model to perform machine translation, we just feed a Start-Of-Sentence marker(&lt;SOS&gt;) to the model at the start, and incrementally predict the next word based on the output of the previous word(s).</p>
+<p>In helping me achieve these understandings, <a href="https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853">this</a> medium article and <a href="https://kikaben.com/transformers-encoder-decoder/#:~:text=The%20transformer%20uses%20an%20encoder,an%20output%20sentence%20(translation).">this</a> article helped me tremendiously. And most of the diagrams are from the medium article – a huge thanks for helping me understand the exact dimensions of all the variables.</p>
+<h2 id="the-program"tabindex="-1">The Program</h2>
+<p>Once I felt like I understood how Transformer works, I just want to test it out and see it in action. First we need to do some simple exploring and preprocessing, but I want to minimize this and get to the training stage quickly. I took a look at some of the tweets, and processed them by concatenating the location and keyword attribute in the end of the sentence if non-null. There are so many more ways I can preprocess the data better, including stripping stop words, numbers, HTML tags, punctuations and others, and converting to lower case. I left it as it is for now.</p>
+<p>Then I mostly followed <a href="https://blog.paperspace.com/transformers-text-classification/">this amazing tutorial</a> to implement a pre-trained Transformer model. The challenge is to adopt the tutorial to this use case. The first difference is the data source. In the tutorial the author imported data from the tfds library, which I think is a variation of Dataset type in Tensorflow that is not directly accessible and need to use library functions like next() and batch(), where as my data is a dataframe loaded from csv. I have to figure out the correct way to convert a dataframe to the correct Dataset type, which took me a relatively long time. Moreover, the conversion needs to happen to not only the training dataset, but also the testing dataset. Thus, when predicting, I need to call <code>model.predict(test_data.batch(1))</code> instead of <code>model.predict(test_data)</code>, which is a little ugly but get the work done. Finally, a sigmoid function is applied to the predictions, so that the predictions falls between 0 and 1, and I used <code>round()</code> to map them to 0 and 1, which is the final prediction.</p>
+<h2 id="result"tabindex="-1">Result</h2>
+<p>Without any further customized fine-tuning and data preprocessing, the model acheived an accuracy score of 0.75758 on the test dataset. In the training set, there are 4342 0 target values, and 3271 1 target values, so 57.03% tweets are not real disaster tweets, and 42.97% tweets are. The expected accuracy of a random guesser is <code>0.5703 * 0.5703 + 0.4297 * 0.4297 = 0.3252 + 0.1846 ~= 0.51</code>. So my classifier is a little more than a quarter more possible to predict correctly.</p>
+<h2 id="future-steps"tabindex="-1">Future Steps</h2>
+<p>I want to work on it a bit more in the future to explore text data preparation and handmaking a Transformer model. Following a different section of the above mentioned article and other notebooks should serve as a good first step. Besides, I also want to try fine-tuning the model, see how different hyperparameters affect the model accuracy, and how other training strategies like using 5-fold Stratified Cross Validation to affect the model outcome. In <a href="/pages/article/3.html">the next article</a>, I discuss this work, and how I improved the model accuracy from 0.75758 to a consistent and reproducable ~0.786.</p>
+<p><img src="../images/real_disaster_leaderboard.PNG"alt="leaderboard"loading="lazy"decoding="async"width="1488"height="186"></p>
+<p>The pre-contest research, learning about Tensorflow and making sense of the data type took the most time. I feel like I learned a lot from this project, and hope you enjoyed my blog too! Feel free to comment if you have any thoughts.</p>
+<h2 id="source-code"tabindex="-1">Source Code</h2>
+<p><a href="https://www.kaggle.com/code/tianyimasf/real-disaster-tweets-prediction-with-transformer">Kaggle</a> <a href="https://github.com/tianyimasf/kaggle/blob/main/real-disaster-tweets-prediction-with-transformer.ipynb">Github</a></p>
+</section>
+        <section id="article-navigation">
+          
+          <div class="article-navigation-item article-navigation-next">
+            <a href="/pages/article/3.html">
+              <div class="article-navigation-arrow article-navigation-next">
+                ＜
+              </div>
+              <div class="article-navigation-content article-navigation-next">
+                <p class="article-navigation-title">Real Disaster Tweets Prediction, Part 2</p>
+                <p class="article-navigation-subtitle">
+                  Predict if a tweet is really reporting a disaster or not by fine-tuning Transformer model
+                </p>
+              </div>
+            </a>
+          </div>
+           
+          <div class="article-navigation-item article-navigation-prev">
+            <a href="/pages/article/2.html">
+              <div class="article-navigation-arrow article-navigation-prev">
+                ＞
+              </div>
+              <div class="article-navigation-content article-navigation-prev">
+                <p class="article-navigation-title">Fresh Eyes: Post Moving Musing</p>
+                <p class="article-navigation-subtitle">
+                  Some post moving musing about fresh eyes and truth
+                </p>
+              </div>
+            </a>
+          </div>
+          
+        </section>
+        <section id="article-social-container">
+          <div id="fb-root"></div>
+          <div id="fb-like"class="fb-like"data-href="https://tianyimasf.github.io/article/1.html"data-layout="button_count"data-action="like"data-size="small"data-show-faces="true"data-share="true"></div>
+          <a href="https://twitter.com/share"class="twitter-share-button"data-show-count="true"></a>
+        </section>
+        <section id="article-comments">
+          <script async src="https://utteranc.es/client.js"repo="tianyimasf/pages-comments"issue-term="pathname"theme="github-light"crossorigin="anonymous"></script>
+        </section>
+        <section id="article-list-button-container">
+          <a href="/articles.html">
+            <div id="article-list-button">📚</div>
+          </a>
+        </section>
+      </article>
+    </main>
+  
+

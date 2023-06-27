@@ -1,0 +1,54 @@
+<!doctypehtml>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Real Disaster Tweets Prediction</title>
+
+  <meta name="viewport"content="width=device-width,initial-scale=1">
+  <meta http-equiv="X-UA-Compatible"content="ie=edge">
+
+  <link rel="shortcut icon"href="../assets/favicon.ico"type="image/x-icon">
+  <link rel="preload"href="../styles/work.css"as="style">
+  <link rel="stylesheet"href="../styles/work.css">
+</head>
+<body>
+  <header id="top-container"role="navigation">
+    <nav>
+  <a class="logo-link"href="/pages">
+    <h1>Tianyi Ma</h1>
+    <span>'s stuff</span>
+  </a>
+  <small>
+    <a id="about"class="info-link"href="/pages/about.html">👀About</a> /
+    <a id="works"class="info-link"href="/pages/works.html">🔥Works</a> /
+    <a id="articles"class="info-link"href="/pages/articles.html">📚Articles</a>
+  </small>
+</nav>
+
+  </header>
+  <main id="main-container">
+    <article id="work-container">
+      <h1 id="work-title">
+        Real Disaster Tweets Prediction
+      </h1>
+      <h2 id="work-subtitle">
+        Predict if a tweet is really reporting a disaster or not
+      </h2>
+      <article id="work-content-container">
+        <p><img src="../images/real_disaster_model.PNG"alt="real disaster model architecture"></p>
+<p><img src="../images/real_disaster_leaderboard.PNG"alt="leaderboard"></p>
+<p><em><strong>Real Disaster Tweets Prediction| Mar, 2023 | <a href="https://www.kaggle.com/code/tianyimasf/real-disaster-tweets-prediction-with-transformer">Kaggle Notebook</a> | <a href="https://github.com/tianyimasf/kaggle/blob/main/real-disaster-tweets-prediction-with-transformer.ipynb">Github</a></strong></em></p>
+<p>Twitter has become an important communication channel in times of emergency.</p>
+<p>The ubiquitousness of smartphones enables people to announce an emergency they’re observing in real-time. Because of this, more agencies are interested in programatically monitoring Twitter (i.e. disaster relief organizations and news agencies).</p>
+<p>But, it’s not always clear whether a person’s words are actually announcing a disaster. Take this example:</p>
+<p><img src="../images/fake_disaster_tweet.png"alt="fake disaster tweet"></p>
+<p>The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.</p>
+<p>In this competition, we’re challenged to build a machine learning model that predicts which Tweets are about real disasters and which one’s aren’t.</p>
+<p>Using the Transformer encoder model, I initially acheived a 0.75758 accuracy. Upon fine-tuning, the accuracy is improved to 0.78577.</p>
+<p>If you are interested in discussions about how I did this, I have a blog detailed <a href="/pages/article/1.html">my solution, part 1</a>, <a href="/pages/article/3.html">part 2</a> to this problem.</p>
+
+      
+    </article>
+  </article></main>
+
+

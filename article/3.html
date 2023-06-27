@@ -1,0 +1,274 @@
+<!doctypehtml>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Real Disaster Tweets Prediction, Part 2</title>
+
+    <meta name="viewport"content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible"content="ie=edge">
+
+    <link rel="shortcut icon"href="../assets/favicon.ico"type="image/x-icon">
+    <link rel="preload"href="../styles/article.css"as="style">
+    <link rel="stylesheet"href="../styles/article.css">
+  </head>
+  <body>
+    <header id="top-container"role="navigation">
+      <nav>
+  <a class="logo-link"href="/pages">
+    <h1>Tianyi Ma</h1>
+    <span>'s stuff</span>
+  </a>
+  <small>
+    <a id="about"class="info-link"href="/pages/about.html">👀About</a> /
+    <a id="works"class="info-link"href="/pages/works.html">🔥Works</a> /
+    <a id="articles"class="info-link"href="/pages/articles.html">📚Articles</a>
+  </small>
+</nav>
+
+    </header>
+    <main id="main-container">
+      <article id="article-container">
+        <h1 id="article-title">Real Disaster Tweets Prediction, Part 2</h1>
+        
+        <h2 id="article-subtitle">Predict if a tweet is really reporting a disaster or not by fine-tuning Transformer model</h2>
+        
+        <time id="article-date"> 2023.04.27 </time>
+        <section id="article-content-container"><details><summary>Table of Contents</summary>
+<p><div class="table-of-contents"><ul><li><a href="#background">Background</a><li><a href="#introduction">Introduction</a><li><a href="#the-algorithm">The Algorithm</a><li><a href="#result-and-discussion">Result and Discussion</a><li><a href="#source-code">Source Code</a><li><a href="#references">References</a></ul></div><p></p>
+</details>
+<h2 id="background"tabindex="-1">Background</h2>
+<p>Twitter has become an important communication channel in times of emergency.</p>
+<p>The ubiquitousness of smartphones enables people to announce an emergency they’re observing in real-time. Because of this, more agencies are interested in programatically monitoring Twitter (i.e. disaster relief organizations and news agencies).</p>
+<p>But, it’s not always clear whether a person’s words are actually announcing a disaster. Take this example:</p>
+<p><img src="../images/fake_disaster_tweet.png"alt="fake disaster tweet"loading="lazy"decoding="async"width="592"height="1226"></p>
+<p>The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.</p>
+<p>In this competition, we’re challenged to build a machine learning model that predicts which Tweets are about real disasters and which one’s aren’t.</p>
+<h2 id="introduction"tabindex="-1">Introduction</h2>
+<p>In <a href="/pages/article/1.html">Part 1 of this project</a>, I covered 1) the architecture of Transformer model, 2) solving this problem using pre-trained Transformer LM, 3) the result and some analysis of the result. After I was done using the pre-trained model, I was curious if homemade model would behave better, so I started from the ground up by building the encoder architecture, train it, and fine-tuning using various different combinations of hypter-parameters. I also added text-preprocessing. It turns out the model can render to be 2.5-3% higher than using pre-trained model using a much smaller model, a 5-fold Stratified Cross Validation, and saving models at each epoch if it’s the best model seen so far depending on validation accuracy.</p>
+<h2 id="the-algorithm"tabindex="-1">The Algorithm</h2>
+<p>First the data is preprocessed by transforming each words to lowercase, strippping stopwords, html, numbers, punctuations, etc. Then, each word is lemmatized using <code>WordNetLemmatizer</code> from the package <code>nltk</code>. Moreover, I limited the tweets to only containing the top 17k most common words, set max length of tweets to 16 words, transformed words to ids:</p>
+<pre class="hljs"><code>vocab_size = <span class="hljs-number">17000</span>  <span class="hljs-comment"># Only consider the top 17k words</span>
+maxlen = <span class="hljs-number">16</span>  <span class="hljs-comment"># Only consider the first 16 words of each tweet</span>
+
+train_data = train_data.fillna(<span class="hljs-string">&#x27;&#x27;</span>)
+train_data[<span class="hljs-string">&#x27;text&#x27;</span>]=train_data[<span class="hljs-string">&#x27;text&#x27;</span>].apply(clean_text)  <span class="hljs-comment"># Strips html, numbers, punctuations, etc.</span>
+train_data[<span class="hljs-string">&#x27;text&#x27;</span>] = train_data[<span class="hljs-string">&#x27;text&#x27;</span>].apply(<span class="hljs-keyword">lambda</span> x: <span class="hljs-string">&#x27; &#x27;</span>.join([word <span class="hljs-keyword">for</span> word <span class="hljs-keyword">in</span> x.split() <span class="hljs-keyword">if</span> word <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> (stop)]))  <span class="hljs-comment"># Stripes stop words</span>
+train_data[<span class="hljs-string">&#x27;text&#x27;</span>]=train_data[<span class="hljs-string">&#x27;text&#x27;</span>].apply(preprocessdata)  <span class="hljs-comment"># Lemmatization</span>
+
+
+<span class="hljs-comment"># The location and keyword for each tweets are available in some rows</span>
+<span class="hljs-comment"># Concatenate to take those into account</span>
+spaces = [<span class="hljs-string">&#x27; &#x27;</span> <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">len</span>(train_data.location))]
+X = train_data.text + spaces + train_data.location + spaces + train_data.keyword
+
+
+<span class="hljs-comment"># word2id</span>
+frequent_words = pd.Series(<span class="hljs-string">&#x27; &#x27;</span>.join(X).split()).value_counts()[:vocab_size]
+vocabulary = frequent_words.keys().tolist()
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">map2vocab_index</span>(<span class="hljs-params">text</span>):
+    word_indices = np.asarray([vocabulary.index(word) <span class="hljs-keyword">for</span> word <span class="hljs-keyword">in</span> text.split() <span class="hljs-keyword">if</span> word <span class="hljs-keyword">in</span> vocabulary]).astype(<span class="hljs-string">&#x27;float32&#x27;</span>)
+    <span class="hljs-keyword">return</span> word_indices
+
+X = X.apply(map2vocab_index)
+y = np.asarray(train_data.target)
+</code></pre>
+<p>If we look into the length of each input a little bit, we would find this:</p>
+<pre class="hljs"><code>length = [<span class="hljs-built_in">len</span>(x) <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> X]
+pd.Series(length).describe()
+
+<span class="hljs-comment"># &gt; output</span>
+<span class="hljs-comment"># count    7613.000000</span>
+<span class="hljs-comment"># mean       11.196769</span>
+<span class="hljs-comment"># std         3.854303</span>
+<span class="hljs-comment"># min         1.000000</span>
+<span class="hljs-comment"># 25%         8.000000</span>
+<span class="hljs-comment"># 50%        11.000000</span>
+<span class="hljs-comment"># 75%        14.000000</span>
+<span class="hljs-comment"># max        27.000000</span>
+<span class="hljs-comment"># dtype: float64</span>
+
+pd.Series(length).quantile(<span class="hljs-number">0.9</span>)
+<span class="hljs-comment"># &gt; 16.0    # 90% quantile of the input length</span>
+</code></pre>
+<p>And this is the reason why the above <code>maxlen</code> is chosen – because 90% of the texts have less than 16 words after preprocessing, and we don’t want all the extra zeros when we are doing the padding, which is done by the below code. with <code>train_test_split()</code>:</p>
+<pre class="hljs"><code>X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=<span class="hljs-number">0.33</span>, random_state=<span class="hljs-number">42</span>)
+
+X_train = tf.keras.preprocessing.sequence.pad_sequences(X_train, maxlen=maxlen)
+X_val = tf.keras.preprocessing.sequence.pad_sequences(X_val, maxlen=maxlen)
+</code></pre>
+<p>Peeking into the feature validation set, we got what we expected:</p>
+<pre class="hljs"><code>X_val[:<span class="hljs-number">2</span>]
+
+<span class="hljs-comment"># &gt; output</span>
+<span class="hljs-comment"># array([[   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,</span>
+<span class="hljs-comment">#            8,   40,  261,  159,  159],</span>
+<span class="hljs-comment">#        [   0,    0,    0,    0,    0,    0,    0,    0,    0,  172,   52,</span>
+<span class="hljs-comment">#          119,   64, 1880, 5586,  119]], dtype=int32)</span>
+</code></pre>
+<p>Now we just need to build, compile and fit the model. The following two classes would be the building blocks of our model:</p>
+<pre class="hljs"><code><span class="hljs-keyword">class</span> <span class="hljs-title class_">TokenAndPositionEmbedding</span>(<span class="hljs-title class_ inherited__">Layer</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, maxlen, vocab_size, embed_dim</span>):
+        <span class="hljs-built_in">super</span>(TokenAndPositionEmbedding, self).__init__()
+        self.token_emb = Embedding(input_dim=vocab_size, output_dim=embed_dim)
+        self.pos_emb = Embedding(input_dim=maxlen, output_dim=embed_dim)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">call</span>(<span class="hljs-params">self, x</span>):
+        maxlen = tf.shape(x)[-<span class="hljs-number">1</span>]
+        positions = tf.<span class="hljs-built_in">range</span>(start=<span class="hljs-number">0</span>, limit=maxlen, delta=<span class="hljs-number">1</span>)
+        positions = self.pos_emb(positions)
+        x = self.token_emb(x)
+        <span class="hljs-keyword">return</span> x + positions
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TransformerBlock</span>(<span class="hljs-title class_ inherited__">Layer</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, embed_dim, num_heads, ff_dim, rate=<span class="hljs-number">0.5</span></span>):
+        <span class="hljs-built_in">super</span>(TransformerBlock, self).__init__()
+        self.att = MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim)
+        self.dropout1 = Dropout(rate)
+        self.layernorm1 = LayerNormalization(epsilon=<span class="hljs-number">1e-6</span>)
+        self.ffn = Sequential(
+            [Dense(ff_dim, activation=<span class="hljs-string">&quot;relu&quot;</span>),
+             Dense(embed_dim),]
+        )
+        self.dropout2 = Dropout(rate)
+        self.layernorm2 = LayerNormalization(epsilon=<span class="hljs-number">1e-6</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">call</span>(<span class="hljs-params">self, inputs, training</span>):
+        attn_output = self.att(inputs, inputs)
+        attn_output = self.dropout1(attn_output, training=training)
+        out1 = self.layernorm1(inputs + attn_output)
+        ffn_output = self.ffn(out1)
+        ffn_output = self.dropout2(ffn_output, training=training)
+        <span class="hljs-keyword">return</span> self.layernorm2(out1 + ffn_output)
+</code></pre>
+<p>As you can see they matches the Transformer architecture we discussed in Part 1. If you need a refresher, <a href="/pages/article/1.html">here</a> is the last article. Now we just need to actually build the model, so we have:</p>
+<pre class="hljs"><code>embed_dim = <span class="hljs-number">64</span>  <span class="hljs-comment"># Embedding size for each token</span>
+num_heads = <span class="hljs-number">4</span>  <span class="hljs-comment"># Number of attention heads</span>
+ff_dim = <span class="hljs-number">256</span>  <span class="hljs-comment"># Hidden layer size in feed forward network inside transformer</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">get_model</span>():
+    inputs = Input(shape=(maxlen,))
+    embedding_layer = TokenAndPositionEmbedding(maxlen, vocab_size, embed_dim)
+    x = embedding_layer(inputs)
+    transformer_block = TransformerBlock(embed_dim, num_heads, ff_dim, rate = <span class="hljs-number">0.1</span>)
+    x = transformer_block(x)
+    <span class="hljs-comment"># transformer_block2 = TransformerBlock(embed_dim, num_heads, ff_dim, rate = 0.1)</span>
+    <span class="hljs-comment"># x = transformer_block2(x)</span>
+    x = GlobalAveragePooling1D()(x)
+    x = Dropout(<span class="hljs-number">0.5</span>)(x)
+    x = Dense(<span class="hljs-number">32</span>, activation=<span class="hljs-string">&quot;relu&quot;</span>)(x)
+    x = Dropout(<span class="hljs-number">0.3</span>)(x)
+    outputs = Dense(<span class="hljs-number">1</span>, activation=<span class="hljs-string">&quot;sigmoid&quot;</span>)(x)
+
+    <span class="hljs-keyword">return</span> Model(inputs=inputs, outputs=outputs)
+</code></pre>
+<p>It’s easy to see that for this model, we have several model parameters to tweak around with. The table below are the values I tried corresponding to each of those paramaters.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td># of transformer blocks</td>
+<td>1, 2, 3, 6</td>
+</tr>
+<tr>
+<td>Embedding Dimension</td>
+<td>32, 64, 100, 128, 256, 512</td>
+</tr>
+<tr>
+<td># of attention heads</td>
+<td>2, 4, 8</td>
+</tr>
+<tr>
+<td>Hiden Layer Dimension</td>
+<td>64, 128, 256, 512, 1024, 2048</td>
+</tr>
+<tr>
+<td>Dropout Rate</td>
+<td>0.1, 0.2, 0.3, 0.4, 0.5</td>
+</tr>
+<tr>
+<td>Learning Rate</td>
+<td>1e-5, 5e-5, 1e-4</td>
+</tr>
+</tbody>
+</table>
+<p>By experimenting with different combinations and reading other people’s takes and results, I finally chose the values in the code block shown above since it seems to work the best with this problem specifically. I spent the majority of my time tuning the model architecture using these possible parameter values, repeating a few times with each set of value combinations to try verify the results. It’s really fun and after a few times you can see that there is definitely patterns to it. For example, this is hardly a big or medium dataset, and if the model is too complex it can’t even acheive our previous accuracy 75%. Setting Hidden Layer Dimension to be 512 and # of attention heads to 2 usually do the trick and gave us resulting accuracy comparable to our pre-trained model, that is, 75%. Embedding Dimension that is larger than 100 usually make the model worse. More than 2 transformer block also make it worse. Considering that input sequences have at max 16 words, and the dataset is quite small, it’s preferable to have small models to avoid overfitting. At last, a learning rate of 1e-4 is shown to have better performance than 1e-5 or 5e-5 and is therefore chosen.</p>
+<p>Below is my code to train the model. The actual code is long and hard to read, so I just showed the most important code here. Full source code is attached in the end. Following the best practices, I used 5-fold Stratified Cross Validation to build 5 different models, and later predict using their average output. It saves the model on each epoch if it’s the best model seen so far based on validation accuracy. It will also stop early if the model stopped improving.</p>
+<pre class="hljs"><code><span class="hljs-keyword">for</span> train_indices, val_indices <span class="hljs-keyword">in</span> StratifiedKFold(<span class="hljs-number">5</span>, shuffle=<span class="hljs-literal">True</span>, random_state=<span class="hljs-number">42</span>).split(X_train, y_train):
+
+    <span class="hljs-comment"># ...</span>
+
+    model = get_model()
+    model.<span class="hljs-built_in">compile</span>(optimizer=tf.keras.optimizers.Adam(<span class="hljs-number">1e-4</span>),
+                    loss=tf.keras.losses.BinaryCrossentropy(), metrics=[<span class="hljs-string">&quot;accuracy&quot;</span>])
+
+    early_stop = tf.keras.callbacks.EarlyStopping(patience=<span class="hljs-number">5</span>)
+
+    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(model_checkpoint_path, monitor=<span class="hljs-string">&quot;val_accuracy&quot;</span>, save_best_only=<span class="hljs-literal">True</span>, save_weights_only=<span class="hljs-literal">True</span>)
+
+    history = model.fit(train_features, train_targets, validation_data=(validation_features, validation_targets), epochs=<span class="hljs-number">20</span>, callbacks=[early_stop, model_checkpoint])
+</code></pre>
+<h2 id="result-and-discussion"tabindex="-1">Result and Discussion</h2>
+<p>The final model improved ~75% accuracy to ~78.5% accuracy and boosted my rank up +200. The only thing is that the Transformer in its original form is most suitable for output sequence generation such as Machine Translation, but this is a classification problem. For this kind of problem, it’s better to use a pre-trained variation of the BERT model, of which the objective is to give a good representation of the sequence for downstream application, in our case a classification problem. BERT is pre-trained as a Masked Language Model(50% of the time) and using Next Sentence Prediction(the other 50%). BERT pre-trained models are great for transfering learning use cases like this. In fact, every Kaggle notebook that used the original Transformer model has an accuracy equal or less than 80%, however, every solution on the first page that used BERT has easily at least 82.5% accuracy. It’s not a difficult task to port a BERT model into my solution – I just need to use a tokenizer and then build some Feed Forward Network upon the BERT representation. However, my solution is already pretty long and dense, so I skipped it for now – I’ll use BERT in my next project. I already have an idea of what I want to do. On the other hand, I also want to incorporate some tools to automate experimentation and to version my models and predictions: manual experimentation is chaotic and without documentation, which was a big problem I had in this project.</p>
+<p>I learned a lot about fine-tuning through this experience, and have read tutorials, documentations, and implementation codes. It’s been a great learning experience, and now I feel much more comfortable developing ML models using Tensorflow and Keras and has a crude sense of model complexity and performance that needs to be improved upon still. Hope you find something interesting or useful in this article as well.</p>
+<h2 id="source-code"tabindex="-1">Source Code</h2>
+<p><a href="https://www.kaggle.com/code/tianyimasf/real-disaster-tweets-prediction-with-transformer">Kaggle</a> <a href="https://github.com/tianyimasf/kaggle/blob/main/real-disaster-tweets-prediction-with-transformer.ipynb">Github</a></p>
+<h2 id="references"tabindex="-1">References</h2>
+<ol>
+<li>Transformers For Text Classification: <a href="https://blog.paperspace.com/transformers-text-classification">https://blog.paperspace.com/transformers-text-classification</a></li>
+<li>Kaggle, Transformer Encoder for Classification in Pytorch: <a href="https://www.kaggle.com/code/zhuyuqiang/transformer-encoder-for-classification-in-pytorch">https://www.kaggle.com/code/zhuyuqiang/transformer-encoder-for-classification-in-pytorch</a></li>
+<li>Kaggle, Disaster Tweets Classification: Transformer: <a href="https://www.kaggle.com/code/lonnieqin/disaster-tweets-classification-transformer">https://www.kaggle.com/code/lonnieqin/disaster-tweets-classification-transformer</a></li>
+</ol>
+</section>
+        <section id="article-navigation">
+          
+          <div class="article-navigation-item article-navigation-next">
+            <a href="/pages/article/0.html">
+              <div class="article-navigation-arrow article-navigation-next">
+                ＜
+              </div>
+              <div class="article-navigation-content article-navigation-next">
+                <p class="article-navigation-title">WiDS Datathon: Extreme Weather Forcasting Contest</p>
+                <p class="article-navigation-subtitle">
+                  Long range extreme weather forcasting for fighting climate change
+                </p>
+              </div>
+            </a>
+          </div>
+           
+          <div class="article-navigation-item article-navigation-prev">
+            <a href="/pages/article/1.html">
+              <div class="article-navigation-arrow article-navigation-prev">
+                ＞
+              </div>
+              <div class="article-navigation-content article-navigation-prev">
+                <p class="article-navigation-title">Kaggle Contest: Real Disaster Tweets Prediction</p>
+                <p class="article-navigation-subtitle">
+                  Predict if a tweet is really reporting a disaster or not
+                </p>
+              </div>
+            </a>
+          </div>
+          
+        </section>
+        <section id="article-social-container">
+          <div id="fb-root"></div>
+          <div id="fb-like"class="fb-like"data-href="https://tianyimasf.github.io/article/3.html"data-layout="button_count"data-action="like"data-size="small"data-show-faces="true"data-share="true"></div>
+          <a href="https://twitter.com/share"class="twitter-share-button"data-show-count="true"></a>
+        </section>
+        <section id="article-comments">
+          <script async src="https://utteranc.es/client.js"repo="tianyimasf/pages-comments"issue-term="pathname"theme="github-light"crossorigin="anonymous"></script>
+        </section>
+        <section id="article-list-button-container">
+          <a href="/articles.html">
+            <div id="article-list-button">📚</div>
+          </a>
+        </section>
+      </article>
+    </main>
+  
+
