@@ -23,3 +23,7 @@ Through the GIS course from US Davis on Coursera, I made my first map using ArcG
 ![gmo_electoral_politics_analysis](../images/gmo_electoral_politics_analysis.png)
 
 A map plotting the percentages of yes votes for each California county for the ballot measure that requires Genetically Modified Organism labeling.
+
+![Most Frequent Words in Titles](../images/artwork_title_wrodcloud.png)
+
+This is the most frequent words in artwork titles based on an art history textbook analysis.

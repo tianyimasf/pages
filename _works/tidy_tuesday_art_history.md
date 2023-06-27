@@ -6,6 +6,8 @@ thumbnail: "./images/top_20_popular_artists.png"
 
 ![Top 20 Most Popular Artists](../images/top_20_popular_artists.png)
 
+![Most Frequent Words in Titles](../images/artwork_title_wrodcloud.png)
+
 _**Art History Data Analysis -- a Tidy Tuesday Series | 05.09.2023 | [Github](https://github.com/tianyimasf/tidy-tuesday-social-dataset-analysis/blob/main/art_history_analysis/image/complete_demographic_analysis.png)**_
 
 Tidy Tuesday a wonderful weekly data project in R. They have been running since 2018, releasing a "toy" dataset every Tuesday for the R community to practice data wrangling and visualization. They have super fun datasets, and I'm using them to create this series, documenting my data storytelling journey and hopefully have fun too.
