@@ -1,6 +1,6 @@
 ---
-title: "Tableau & ArcGIS Visualizations"
-subtitle: "Time Series, Social Network & GIS visualizations"
+title: "Tableau, ArcGIS & Wordcloud Visualizations"
+subtitle: "Time Series, Social Network, GIS & Lyrics visualizations"
 thumbnail: "./images/fb_network_3000_viz.png"
 ---
 
@@ -24,6 +24,6 @@ Through the GIS course from US Davis on Coursera, I made my first map using ArcG
 
 A map plotting the percentages of yes votes for each California county for the ballot measure that requires Genetically Modified Organism labeling.
 
-![Most Frequent Words in Titles](../images/artwork_title_wrodcloud.png)
+![Most Frequent Words in Lyrics](../images/hs1_wordcloud_bw.png)
 
-This is the most frequent words in artwork titles based on an art history textbook analysis.
+Scrapped Harry Style's most popular songs, extracted words in the lyrics and created wordcloud from them.
